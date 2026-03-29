@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARDPS Admin Panel</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+        }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        .card h2 {
+            margin-top: 0;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+        form {
+            display: grid;
+            gap: 1rem;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        input, select {
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        button {
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 6px;
+            display: none;
+            font-family: monospace;
+            background: #f1f5f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✈️ ARDPS Admin Database Panel</h1>
+        
+        <!-- Add Airport -->
+        <div class="card">
+            <h2>Add Airport</h2>
+            <form id="form-airport">
+                <div class="form-group">
+                    <label>Airport Code (_id)</label>
+                    <input type="text" name="_id" placeholder="e.g., BLR" required>
+                </div>
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" name="name" placeholder="e.g., Kempegowda International" required>
+                </div>
+                <div class="form-group">
+                    <label>City</label>
+                    <input type="text" name="city" placeholder="e.g., Bangalore" required>
+                </div>
+                <div class="form-group">
+                    <label>Country</label>
+                    <input type="text" name="country" placeholder="e.g., India" value="India" required>
+                </div>
+                <div class="form-group">
+                    <label>Timezone</label>
+                    <input type="text" name="timezone" placeholder="e.g., Asia/Kolkata" value="Asia/Kolkata" required>
+                </div>
+                <button type="submit">Insert Airport into DB</button>
+            </form>
+            <div id="res-airport" class="result"></div>
+        </div>
+
+        <!-- Add Aircraft -->
+        <div class="card">
+            <h2>Add Aircraft</h2>
+            <form id="form-aircraft">
+                <div class="form-group">
+                    <label>Aircraft Ref (_id)</label>
+                    <input type="text" name="_id" placeholder="e.g., AC-003" required>
+                </div>
+                <div class="form-group">
+                    <label>Registration Number</label>
+                    <input type="text" name="registration_number" placeholder="e.g., VT-BLR">
+                </div>
+                <div class="form-group">
+                    <label>Model</label>
+                    <input type="text" name="model" placeholder="e.g., Boeing 737 Max" required>
+                </div>
+                <div class="form-group">
+                    <label>Total Seats</label>
+                    <input type="number" name="total_seats" required>
+                </div>
+                <div class="form-group">
+                    <label>Economy Seats</label>
+                    <input type="number" name="econ_seats" required>
+                </div>
+                <div class="form-group">
+                    <label>Business Seats</label>
+                    <input type="number" name="biz_seats" required>
+                </div>
+                <button type="submit">Insert Aircraft into DB</button>
+            </form>
+            <div id="res-aircraft" class="result"></div>
+        </div>
+
+        <!-- Add Flight -->
+        <div class="card">
+            <h2>Add Flight</h2>
+            <form id="form-flight">
+                <div class="form-group">
+                    <label>Flight ID (_id)</label>
+                    <input type="text" name="_id" placeholder="e.g., FL-003" required>
+                </div>
+                <div class="form-group">
+                    <label>Flight Number</label>
+                    <input type="text" name="flight_number" placeholder="e.g., AI-404" required>
+                </div>
+                <div class="form-group">
+                    <label>Aircraft Ref</label>
+                    <input type="text" name="aircraft_ref" placeholder="e.g., AC-001" required>
+                </div>
+                <div class="form-group">
+                    <label>Origin</label>
+                    <input type="text" name="origin_ref" placeholder="e.g., BLR" required>
+                </div>
+                <div class="form-group">
+                    <label>Destination</label>
+                    <input type="text" name="destination_ref" placeholder="e.g., DEL" required>
+                </div>
+                <div class="form-group">
+                    <label>Departure Time</label>
+                    <input type="datetime-local" name="departure_time" required>
+                </div>
+                <div class="form-group">
+                    <label>Arrival Time</label>
+                    <input type="datetime-local" name="arrival_time" required>
+                </div>
+                <button type="submit">Insert Flight into DB</button>
+            </form>
+            <div id="res-flight" class="result"></div>
+        </div>
+
+    </div>
+
+    <script>
+        async function submitData(url, data, resId) {
+            const resDiv = document.getElementById(resId);
+            resDiv.style.display = 'block';
+            resDiv.textContent = 'Submitting to database...';
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                resDiv.textContent = JSON.stringify(result, null, 2);
+            } catch (err) {
+                resDiv.textContent = 'Error: ' + err.message;
+            }
+        }
+
+        document.getElementById('form-airport').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const data = Object.fromEntries(fd.entries());
+            data.terminals = [];
+            data.coordinates = { lat: 0, lng: 0 };
+            submitData('/api/admin/airports', data, 'res-airport');
+        });
+
+        document.getElementById('form-aircraft').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const data = {
+                _id: fd.get('_id'),
+                registration_number: fd.get('registration_number'),
+                model: fd.get('model'),
+                total_seats: parseInt(fd.get('total_seats')),
+                seat_config: {
+                    economy: parseInt(fd.get('econ_seats')),
+                    business: parseInt(fd.get('biz_seats')),
+                    first_class: 0
+                },
+                status: "active"
+            };
+            submitData('/api/admin/aircraft', data, 'res-aircraft');
+        });
+
+        document.getElementById('form-flight').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const data = {
+                _id: fd.get('_id'),
+                flight_number: fd.get('flight_number'),
+                aircraft_ref: fd.get('aircraft_ref'),
+                origin_ref: fd.get('origin_ref'),
+                destination_ref: fd.get('destination_ref'),
+                departure_time: fd.get('departure_time'),
+                arrival_time: fd.get('arrival_time'),
+                status: "scheduled",
+                base_fare: { economy: 3000.0, business: 10000.0, first_class: null },
+                stops: [],
+                seat_inventory: {
+                    economy: { total: 150, available: 150 },
+                    business: { total: 30, available: 30 },
+                    first_class: { total: 0, available: 0 }
+                }
+            };
+            submitData('/api/admin/flights', data, 'res-flight');
+        });
+    </script>
+</body>
+</html>
