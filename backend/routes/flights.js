@@ -110,7 +110,7 @@ router.get('/:id', async (req, res) => {
 router.get('/:id/seats', async (req, res) => {
   try {
     const db = getDB();
-    const { cabin_class } = req.query;
+    const { cabin_class, session_id } = req.query;
     if (!cabin_class) return res.status(400).json({ success: false, error: 'cabin_class required' });
 
     const flight = await db.collection('flights').findOne({ _id: req.params.id });
@@ -118,6 +118,11 @@ router.get('/:id/seats', async (req, res) => {
 
     const inventory = flight.seat_inventory[cabin_class];
     if (!inventory) return res.status(400).json({ success: false, error: 'Invalid cabin class' });
+
+    // Clean up expired holds
+    await db.collection('seat_holds').deleteMany({
+      expires_at: { $lt: new Date() }
+    });
 
     // Get all booked seats for this flight + cabin class (only confirmed bookings)
     const bookedBookings = await db.collection('bookings').find({
@@ -127,6 +132,15 @@ router.get('/:id/seats', async (req, res) => {
     }, { projection: { seat_number: 1 } }).toArray();
 
     const bookedSeats = new Set(bookedBookings.map(b => b.seat_number));
+
+    // Get active holds
+    const activeHolds = await db.collection('seat_holds').find({
+      flight_ref: req.params.id,
+      cabin_class: cabin_class
+    }).toArray();
+    
+    const heldSeatsMap = new Map();
+    activeHolds.forEach(h => heldSeatsMap.set(h.seat_number, h.session_id));
 
     // Generate seat layout
     const totalSeats = inventory.total;
@@ -145,11 +159,19 @@ router.get('/:id/seats', async (req, res) => {
       for (let c = 0; c < cols; c++) {
         if (count >= totalSeats) break;
         const seatId = `${r}${colLabels[c]}`;
+        
+        let status = 'available';
+        if (bookedSeats.has(seatId)) {
+          status = 'booked';
+        } else if (heldSeatsMap.has(seatId) && heldSeatsMap.get(seatId) !== session_id) {
+          status = 'held';
+        }
+        
         seats.push({
           id: seatId,
           row: r,
           col: colLabels[c],
-          status: bookedSeats.has(seatId) ? 'booked' : 'available',
+          status: status,
           isAisle: aisleAfter.includes(c)
         });
         count++;

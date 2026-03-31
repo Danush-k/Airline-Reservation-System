@@ -106,6 +106,21 @@ router.post('/', async (req, res) => {
       return res.status(409).json({ success: false, error: `Seat ${seat_number} is already booked. Please select another seat.` });
     }
 
+    const session_id = req.body.session_id;
+    if (session_id) {
+      // Clean expired
+      await db.collection('seat_holds').deleteMany({ expires_at: { $lt: new Date() } });
+      const activeHold = await db.collection('seat_holds').findOne({
+        flight_ref: flight_id,
+        seat_number: seat_number,
+        cabin_class: cabin_class,
+        session_id: { $ne: session_id }
+      });
+      if (activeHold) {
+         return res.status(409).json({ success: false, error: `Seat ${seat_number} is currently held by another user.` });
+      }
+    }
+
     // 1. Check seat availability and decrement atomically
     const seatField = `seat_inventory.${cabin_class}.available`;
     const updateResult = await db.collection('flights').findOneAndUpdate(
@@ -275,6 +290,15 @@ router.post('/', async (req, res) => {
       { $push: { booking_history: bookingId } }
     );
 
+    // 6. Clean up the hold
+    if (session_id) {
+      await db.collection('seat_holds').deleteOne({
+        flight_ref: flight_id,
+        seat_number: seat_number,
+        session_id: session_id
+      });
+    }
+
     res.status(201).json({
       success: true,
       data: {
@@ -311,6 +335,66 @@ router.post('/', async (req, res) => {
       console.error('Rollback failed:', rollbackErr);
     }
 
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /api/bookings/hold - HOLD SEAT
+router.post('/hold', async (req, res) => {
+  try {
+    const db = getDB();
+    const { flight_id, cabin_class, seat_number, session_id } = req.body;
+    
+    if (!flight_id || !cabin_class || !session_id) {
+      return res.status(400).json({ success: false, error: 'Missing required fields' });
+    }
+    
+    // Remove existing hold by this session
+    await db.collection('seat_holds').deleteMany({
+      flight_ref: flight_id,
+      session_id: session_id
+    });
+    
+    if (seat_number) {
+      await db.collection('seat_holds').deleteMany({
+        expires_at: { $lt: new Date() }
+      });
+      
+      const existingHold = await db.collection('seat_holds').findOne({
+        flight_ref: flight_id,
+        seat_number: seat_number,
+        cabin_class: cabin_class,
+        session_id: { $ne: session_id }
+      });
+      
+      if (existingHold) {
+        return res.status(409).json({ success: false, error: 'Seat is currently being held by another user' });
+      }
+      
+      const existingBooking = await db.collection('bookings').findOne({
+        flight_ref: flight_id,
+        seat_number: seat_number,
+        cabin_class: cabin_class,
+        booking_status: 'confirmed'
+      });
+      
+      if (existingBooking) {
+         return res.status(409).json({ success: false, error: 'Seat is already booked' });
+      }
+      
+      const expires_at = new Date(Date.now() + 5 * 60 * 1000);
+      await db.collection('seat_holds').insertOne({
+        flight_ref: flight_id,
+        seat_number: seat_number,
+        cabin_class: cabin_class,
+        session_id: session_id,
+        held_at: new Date(),
+        expires_at: expires_at
+      });
+    }
+    
+    res.json({ success: true });
+  } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 });

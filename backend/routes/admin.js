@@ -160,11 +160,24 @@ router.get('/aircraft', async (req, res) => {
 router.post('/aircraft', async (req, res) => {
   try {
     const db = getDB();
-    req.body.total_seats = new Int32(req.body.total_seats || 0);
+    
+    const reqTotal = parseInt(req.body.total_seats) || 0;
+    let reqEcon = 0, reqBiz = 0, reqFirst = 0;
     if (req.body.seat_config) {
-      req.body.seat_config.economy = new Int32(req.body.seat_config.economy || 0);
-      req.body.seat_config.business = new Int32(req.body.seat_config.business || 0);
-      req.body.seat_config.first_class = new Int32(req.body.seat_config.first_class || 0);
+        reqEcon = parseInt(req.body.seat_config.economy) || 0;
+        reqBiz = parseInt(req.body.seat_config.business) || 0;
+        reqFirst = parseInt(req.body.seat_config.first_class) || 0;
+    }
+
+    if (reqTotal !== reqEcon + reqBiz + reqFirst) {
+        return res.status(400).json({ success: false, error: 'Total seats must exactly match the sum of your economy, business, and first class inputs.' });
+    }
+
+    req.body.total_seats = new Int32(reqTotal);
+    if (req.body.seat_config) {
+      req.body.seat_config.economy = new Int32(reqEcon);
+      req.body.seat_config.business = new Int32(reqBiz);
+      req.body.seat_config.first_class = new Int32(reqFirst);
     }
     const result = await db.collection('aircraft').insertOne(req.body);
     res.json({ success: true, data: result });
