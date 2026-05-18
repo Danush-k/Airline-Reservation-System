@@ -573,8 +573,15 @@ For issues, questions, or contributions, please:
 
 <div align="center">
 
-**Built with ❤️ by the ARDPS Development Team**
+---
 
-*An M.Tech Database Systems Assignment - Sri Sivasubramaniya Nadar College of Engineering*
+**Project Lead & Developer**: Danush K  
+**Institution**: Sri Sivasubramaniya Nadar College of Engineering  
+**Course**: ICS1402 - Database Systems (M.Tech CSE)  
+**Academic Year**: 2025-26 (Semester IV)
+
+**Developed as part of the NoSQL Database Systems Assignment**
+
+---
 
 </div>
