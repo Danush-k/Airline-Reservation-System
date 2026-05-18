@@ -576,7 +576,6 @@ For issues, questions, or contributions, please:
 ---
 
 **Project Lead & Developer**: Danush K  
-**Academic Year**: 2025-26 (Semester IV)
 
 **Developed as part of the NoSQL Database Systems Learning**
 
