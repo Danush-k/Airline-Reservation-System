@@ -216,9 +216,21 @@ router.post('/', async (req, res) => {
     // Meal surcharge
     const meal_surcharge = MEAL_SURCHARGES[meal_preference || ''] || 0;
 
+    // Flight-level pricing multiplier
+    let flight_multiplier = 1.0;
+    if (flight.pricing_multiplier && Array.isArray(flight.pricing_multiplier)) {
+      for (const bracket of flight.pricing_multiplier) {
+        if (occupancy_pct >= bracket.occupancy_pct_min && occupancy_pct <= bracket.occupancy_pct_max) {
+          flight_multiplier = bracket.multiplier;
+          break;
+        }
+      }
+    }
+
     const fare_after_demand = base_price * demand_multiplier;
-    const advance_adjustment = fare_after_demand * (advance_discount_pct / 100);
-    const fare_after_advance = fare_after_demand - advance_adjustment;
+    const fare_after_flight_multiplier = fare_after_demand * flight_multiplier;
+    const advance_adjustment = fare_after_flight_multiplier * (advance_discount_pct / 100);
+    const fare_after_advance = fare_after_flight_multiplier - advance_adjustment;
     const fare_with_meal = fare_after_advance + meal_surcharge;
     const taxes = fare_with_meal * 0.12;
     const total_fare = Math.round((fare_with_meal + taxes) * 100) / 100;
@@ -245,6 +257,7 @@ router.post('/', async (req, res) => {
       pricing_snapshot: {
         base_fare: new Double(Math.round(base_price * 100) / 100),
         demand_multiplier: new Double(demand_multiplier),
+        flight_multiplier: new Double(flight_multiplier),
         advance_discount_pct: new Double(advance_discount_pct),
         meal_surcharge: new Double(meal_surcharge),
         taxes: new Double(Math.round(taxes * 100) / 100)

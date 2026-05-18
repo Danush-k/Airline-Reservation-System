@@ -7,9 +7,14 @@
     <style>
         :root {
             --primary: #2563eb;
+            --primary-light: #3b82f6;
+            --success: #16a34a;
+            --warning: #d97706;
+            --danger: #dc2626;
             --background: #f8fafc;
             --surface: #ffffff;
             --text: #1e293b;
+            --text-muted: #64748b;
             --border: #e2e8f0;
         }
         body {
@@ -21,15 +26,9 @@
             display: flex;
             justify-content: center;
         }
-        .container {
-            max-width: 800px;
-            width: 100%;
-        }
-        h1 {
-            text-align: center;
-            color: var(--primary);
-            margin-bottom: 2rem;
-        }
+        .container { max-width: 900px; width: 100%; }
+        h1 { text-align: center; color: var(--primary); margin-bottom: 0.5rem; }
+        .subtitle { text-align: center; color: var(--text-muted); margin-bottom: 2rem; font-size: 0.9rem; }
         .card {
             background: var(--surface);
             border-radius: 12px;
@@ -41,25 +40,32 @@
             margin-top: 0;
             border-bottom: 2px solid var(--border);
             padding-bottom: 0.5rem;
-        }
-        form {
-            display: grid;
-            gap: 1rem;
-        }
-        .form-group {
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
         }
-        label {
+        .badge {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 12px;
             font-weight: 600;
-            margin-bottom: 0.25rem;
         }
+        .badge-blue { background: #dbeafe; color: #1d4ed8; }
+        .badge-green { background: #dcfce7; color: #15803d; }
+        form { display: grid; gap: 1rem; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+        .form-group { display: flex; flex-direction: column; }
+        label { font-weight: 600; margin-bottom: 0.25rem; font-size: 0.85rem; }
+        label small { font-weight: 400; color: var(--text-muted); }
         input, select {
-            padding: 0.75rem;
+            padding: 0.65rem;
             border: 1px solid var(--border);
             border-radius: 6px;
-            font-size: 1rem;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
         }
+        input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
         button {
             background: var(--primary);
             color: white;
@@ -69,48 +75,123 @@
             font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
-            transition: opacity 0.2s;
+            transition: background 0.2s;
         }
-        button:hover {
-            opacity: 0.9;
-        }
+        button:hover { background: var(--primary-light); }
+        .btn-green { background: var(--success); }
+        .btn-green:hover { background: #15803d; }
+
         .result {
             margin-top: 1rem;
             padding: 1rem;
             border-radius: 6px;
             display: none;
             font-family: monospace;
+            font-size: 0.85rem;
             background: #f1f5f9;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .result.success { background: #dcfce7; color: #15803d; }
+        .result.error { background: #fef2f2; color: #dc2626; }
+
+        .section-divider {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0.5rem 0;
+            padding: 0.25rem;
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        .bracket-section {
+            border: 1px dashed var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            background: #fafbfc;
+        }
+        .bracket-header {
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+        .bracket-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .bracket-row input {
+            padding: 0.5rem;
+            font-size: 0.85rem;
+        }
+        .bracket-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+        }
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+
+        .info-box {
+            background: #eff6ff;
+            border-left: 4px solid var(--primary);
+            padding: 0.75rem 1rem;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.85rem;
+            color: #1e40af;
+            margin: 0.5rem 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>✈️ ARDPS Admin Database Panel</h1>
-        
+        <p class="subtitle">Manage airports, aircraft, flights, and pricing rules</p>
+
         <!-- Add Airport -->
         <div class="card">
-            <h2>Add Airport</h2>
+            <h2>Add Airport <span class="badge badge-blue">Master Data</span></h2>
             <form id="form-airport">
-                <div class="form-group">
-                    <label>Airport Code (_id)</label>
-                    <input type="text" name="_id" placeholder="e.g., BLR" required>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Airport Code (_id)</label>
+                        <input type="text" name="_id" placeholder="e.g., BLR" maxlength="3" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" name="name" placeholder="e.g., Kempegowda International" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Name</label>
-                    <input type="text" name="name" placeholder="e.g., Kempegowda International" required>
-                </div>
-                <div class="form-group">
-                    <label>City</label>
-                    <input type="text" name="city" placeholder="e.g., Bangalore" required>
-                </div>
-                <div class="form-group">
-                    <label>Country</label>
-                    <input type="text" name="country" placeholder="e.g., India" value="India" required>
-                </div>
-                <div class="form-group">
-                    <label>Timezone</label>
-                    <input type="text" name="timezone" placeholder="e.g., Asia/Kolkata" value="Asia/Kolkata" required>
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label>City</label>
+                        <input type="text" name="city" placeholder="e.g., Bangalore" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Country</label>
+                        <input type="text" name="country" value="India" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Timezone</label>
+                        <input type="text" name="timezone" value="Asia/Kolkata" required>
+                    </div>
                 </div>
                 <button type="submit">Insert Airport into DB</button>
             </form>
@@ -119,142 +200,573 @@
 
         <!-- Add Aircraft -->
         <div class="card">
-            <h2>Add Aircraft</h2>
+            <h2>Add Aircraft <span class="badge badge-blue">Master Data</span></h2>
             <form id="form-aircraft">
-                <div class="form-group">
-                    <label>Aircraft Ref (_id)</label>
-                    <input type="text" name="_id" placeholder="e.g., AC-003" required>
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label>Aircraft ID (_id)</label>
+                        <input type="text" name="_id" placeholder="e.g., AC-004" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Registration Number</label>
+                        <input type="text" name="registration_number" placeholder="e.g., VT-NEW" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Model</label>
+                        <input type="text" name="model" placeholder="e.g., Boeing 737 Max" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Registration Number</label>
-                    <input type="text" name="registration_number" placeholder="e.g., VT-BLR">
-                </div>
-                <div class="form-group">
-                    <label>Model</label>
-                    <input type="text" name="model" placeholder="e.g., Boeing 737 Max" required>
-                </div>
-                <div class="form-group">
-                    <label>Total Seats</label>
-                    <input type="number" name="total_seats" required>
-                </div>
-                <div class="form-group">
-                    <label>Economy Seats</label>
-                    <input type="number" name="econ_seats" required>
-                </div>
-                <div class="form-group">
-                    <label>Business Seats</label>
-                    <input type="number" name="biz_seats" required>
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label>Economy Seats</label>
+                        <input type="number" name="econ_seats" id="econ_seats" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Business Seats</label>
+                        <input type="number" name="biz_seats" id="biz_seats" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Total Seats <small>(auto-calculated)</small></label>
+                        <input type="number" name="total_seats" id="total_seats" readonly style="background:#f1f5f9; font-weight:600;">
+                    </div>
                 </div>
                 <button type="submit">Insert Aircraft into DB</button>
             </form>
             <div id="res-aircraft" class="result"></div>
         </div>
 
-        <!-- Add Flight -->
+        <!-- Add Flight + Pricing Rules -->
         <div class="card">
-            <h2>Add Flight</h2>
+            <h2>Add Flight <span class="badge badge-green">With Pricing Rules</span></h2>
             <form id="form-flight">
-                <div class="form-group">
-                    <label>Flight ID (_id)</label>
-                    <input type="text" name="_id" placeholder="e.g., FL-003" required>
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label>Flight ID (_id)</label>
+                        <input type="text" name="_id" placeholder="e.g., FL-006" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Flight Number</label>
+                        <input type="text" name="flight_number" placeholder="e.g., AI-606" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Aircraft Ref</label>
+                        <select name="aircraft_ref" id="aircraft-select" required>
+                            <option value="">Loading...</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Flight Number</label>
-                    <input type="text" name="flight_number" placeholder="e.g., AI-404" required>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Origin</label>
+                        <select name="origin_ref" id="origin-select" required>
+                            <option value="">Loading...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Destination</label>
+                        <select name="destination_ref" id="dest-select" required>
+                            <option value="">Loading...</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Aircraft Ref</label>
-                    <input type="text" name="aircraft_ref" placeholder="e.g., AC-001" required>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Departure Time</label>
+                        <input type="datetime-local" name="departure_time" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Arrival Time</label>
+                        <input type="datetime-local" name="arrival_time" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Origin</label>
-                    <input type="text" name="origin_ref" placeholder="e.g., BLR" required>
+
+                <div class="section-divider">💰 Base Fares</div>
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label>Economy Base Fare (₹)</label>
+                        <input type="number" name="base_fare_economy" id="bf_eco" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Business Base Fare (₹)</label>
+                        <input type="number" name="base_fare_business" id="bf_biz" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>First Class Base Fare (₹) <small>(optional)</small></label>
+                        <input type="number" name="base_fare_first" id="bf_first" step="0.01" min="0" placeholder="Leave blank if N/A">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Destination</label>
-                    <input type="text" name="destination_ref" placeholder="e.g., DEL" required>
+
+                <div class="section-divider">🔢 Flight Pricing Multiplier</div>
+                <div class="info-box">This multiplier is stored directly on the flight and is applied on top of the demand-based pricing. It adjusts final fare based on seat occupancy for this specific flight.</div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="add_flight_multiplier" checked>
+                    <label for="add_flight_multiplier" style="margin:0">Include pricing multiplier on this flight</label>
                 </div>
-                <div class="form-group">
-                    <label>Departure Time</label>
-                    <input type="datetime-local" name="departure_time" required>
+
+                <div id="flight-multiplier-config">
+                    <div class="bracket-section">
+                        <div class="bracket-header">Flight Pricing Multiplier — Occupancy Brackets</div>
+                        <div class="bracket-row">
+                            <div><div class="bracket-label">Occupancy Range</div><input value="0% – 40%" readonly style="background:#f1f5f9;"></div>
+                            <div><div class="bracket-label">Multiplier</div><input type="number" id="fm_m1" value="1.0" step="0.05" min="0.5" max="3"></div>
+                            <div></div>
+                        </div>
+                        <div class="bracket-row">
+                            <div><div class="bracket-label">Occupancy Range</div><input value="40% – 60%" readonly style="background:#f1f5f9;"></div>
+                            <div><div class="bracket-label">Multiplier</div><input type="number" id="fm_m2" value="1.1" step="0.05" min="0.5" max="3"></div>
+                            <div></div>
+                        </div>
+                        <div class="bracket-row">
+                            <div><div class="bracket-label">Occupancy Range</div><input value="60% – 80%" readonly style="background:#f1f5f9;"></div>
+                            <div><div class="bracket-label">Multiplier</div><input type="number" id="fm_m3" value="1.25" step="0.05" min="0.5" max="3"></div>
+                            <div></div>
+                        </div>
+                        <div class="bracket-row">
+                            <div><div class="bracket-label">Occupancy Range</div><input value="80% – 100%" readonly style="background:#f1f5f9;"></div>
+                            <div><div class="bracket-label">Multiplier</div><input type="number" id="fm_m4" value="1.4" step="0.05" min="0.5" max="3"></div>
+                            <div></div>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Arrival Time</label>
-                    <input type="datetime-local" name="arrival_time" required>
+
+                <div class="section-divider">📊 Auto-Create Pricing Rules</div>
+                <div class="info-box">
+                    Pricing rules with demand brackets will be automatically created for each cabin class on this route. You can customize the multipliers below.
                 </div>
-                <button type="submit">Insert Flight into DB</button>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="create_pricing" checked>
+                    <label for="create_pricing" style="margin:0">Auto-create pricing rules for this route</label>
+                </div>
+
+                <div id="pricing-config" style="display:grid; gap:1rem;">
+                    <!-- Economy brackets -->
+                    <div class="bracket-section">
+                        <div class="bracket-header">Economy — Demand Brackets</div>
+                        <div class="bracket-row">
+                            <div><div class="bracket-label">Occupancy Range</div><input value="0% – 40%" readonly style="background:#f1f5f9;"></div>
+                            <div><div class="bracket-label">Multiplier</div><input type="number" id="eco_m1" value="1.0" step="0.05" min="0.5" max="3"></div>
+                            <div></div>
+                        </div>
+                        <div class="bracket-row">
+                            <div><div class="bracket-label">Occupancy Range</div><input value="40% – 60%" readonly style="background:#f1f5f9;"></div>
+                            <div><div class="bracket-label">Multiplier</div><input type="number" id="eco_m2" value="1.15" step="0.05" min="0.5" max="3"></div>
+                            <div></div>
+                        </div>
+                        <div class="bracket-row">
+                            <div><div class="bracket-label">Occupancy Range</div><input value="60% – 80%" readonly style="background:#f1f5f9;"></div>
+                            <div><div class="bracket-label">Multiplier</div><input type="number" id="eco_m3" value="1.3" step="0.05" min="0.5" max="3"></div>
+                            <div></div>
+                        </div>
+                        <div class="bracket-row">
+                            <div><div class="bracket-label">Occupancy Range</div><input value="80% – 100%" readonly style="background:#f1f5f9;"></div>
+                            <div><div class="bracket-label">Multiplier</div><input type="number" id="eco_m4" value="1.5" step="0.05" min="0.5" max="3"></div>
+                            <div></div>
+                        </div>
+                    </div>
+
+                    <!-- Business brackets -->
+                    <div class="bracket-section">
+                        <div class="bracket-header">Business — Demand Brackets</div>
+                        <div class="bracket-row">
+                            <div><div class="bracket-label">Occupancy Range</div><input value="0% – 40%" readonly style="background:#f1f5f9;"></div>
+                            <div><div class="bracket-label">Multiplier</div><input type="number" id="biz_m1" value="1.0" step="0.05" min="0.5" max="3"></div>
+                            <div></div>
+                        </div>
+                        <div class="bracket-row">
+                            <div><div class="bracket-label">Occupancy Range</div><input value="40% – 60%" readonly style="background:#f1f5f9;"></div>
+                            <div><div class="bracket-label">Multiplier</div><input type="number" id="biz_m2" value="1.2" step="0.05" min="0.5" max="3"></div>
+                            <div></div>
+                        </div>
+                        <div class="bracket-row">
+                            <div><div class="bracket-label">Occupancy Range</div><input value="60% – 80%" readonly style="background:#f1f5f9;"></div>
+                            <div><div class="bracket-label">Multiplier</div><input type="number" id="biz_m3" value="1.4" step="0.05" min="0.5" max="3"></div>
+                            <div></div>
+                        </div>
+                        <div class="bracket-row">
+                            <div><div class="bracket-label">Occupancy Range</div><input value="80% – 100%" readonly style="background:#f1f5f9;"></div>
+                            <div><div class="bracket-label">Multiplier</div><input type="number" id="biz_m4" value="1.6" step="0.05" min="0.5" max="3"></div>
+                            <div></div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Valid From</label>
+                            <input type="date" id="rule_valid_from" value="2026-01-01" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Valid Until</label>
+                            <input type="date" id="rule_valid_until" value="2026-12-31" required>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-green">Insert Flight + Pricing Rules into DB</button>
             </form>
             <div id="res-flight" class="result"></div>
+        </div>
+
+        <!-- Standalone Add Pricing Rule -->
+        <div class="card">
+            <h2>Add Pricing Rule <span class="badge badge-green">Standalone</span></h2>
+            <div class="info-box">Use this to manually add a pricing rule for an existing route. Select origin, destination, and cabin class.</div>
+            <form id="form-pricing">
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label>Origin</label>
+                        <select name="pr_origin" id="pr-origin-select" required>
+                            <option value="">Select</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Destination</label>
+                        <select name="pr_dest" id="pr-dest-select" required>
+                            <option value="">Select</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Cabin Class</label>
+                        <select name="pr_cabin" id="pr-cabin" required>
+                            <option value="economy">Economy</option>
+                            <option value="business">Business</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label>Base Price (₹)</label>
+                        <input type="number" name="pr_base_price" id="pr_base_price" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Valid From</label>
+                        <input type="date" name="pr_valid_from" value="2026-01-01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Valid Until</label>
+                        <input type="date" name="pr_valid_until" value="2026-12-31" required>
+                    </div>
+                </div>
+
+                <div class="bracket-section">
+                    <div class="bracket-header">Demand Brackets</div>
+                    <div class="bracket-row">
+                        <div><div class="bracket-label">Range</div><input value="0% – 40%" readonly style="background:#f1f5f9;"></div>
+                        <div><div class="bracket-label">Multiplier</div><input type="number" id="pr_m1" value="1.0" step="0.05" min="0.5" max="3"></div>
+                        <div></div>
+                    </div>
+                    <div class="bracket-row">
+                        <div><div class="bracket-label">Range</div><input value="40% – 60%" readonly style="background:#f1f5f9;"></div>
+                        <div><div class="bracket-label">Multiplier</div><input type="number" id="pr_m2" value="1.15" step="0.05" min="0.5" max="3"></div>
+                        <div></div>
+                    </div>
+                    <div class="bracket-row">
+                        <div><div class="bracket-label">Range</div><input value="60% – 80%" readonly style="background:#f1f5f9;"></div>
+                        <div><div class="bracket-label">Multiplier</div><input type="number" id="pr_m3" value="1.3" step="0.05" min="0.5" max="3"></div>
+                        <div></div>
+                    </div>
+                    <div class="bracket-row">
+                        <div><div class="bracket-label">Range</div><input value="80% – 100%" readonly style="background:#f1f5f9;"></div>
+                        <div><div class="bracket-label">Multiplier</div><input type="number" id="pr_m4" value="1.5" step="0.05" min="0.5" max="3"></div>
+                        <div></div>
+                    </div>
+                </div>
+
+                <button type="submit">Insert Pricing Rule into DB</button>
+            </form>
+            <div id="res-pricing" class="result"></div>
         </div>
 
     </div>
 
     <script>
+        const API = '';
+
+        // --- Helpers ---
         async function submitData(url, data, resId) {
             const resDiv = document.getElementById(resId);
             resDiv.style.display = 'block';
-            resDiv.textContent = 'Submitting to database...';
+            resDiv.className = 'result';
+            resDiv.textContent = '⏳ Submitting to database...';
             try {
-                const response = await fetch(url, {
+                const response = await fetch(API + url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
                 const result = await response.json();
-                resDiv.textContent = JSON.stringify(result, null, 2);
+                if (result.success) {
+                    resDiv.className = 'result success';
+                    resDiv.textContent = '✅ Success!\n' + JSON.stringify(result, null, 2);
+                } else {
+                    resDiv.className = 'result error';
+                    resDiv.textContent = '❌ Error: ' + (result.error || JSON.stringify(result));
+                }
             } catch (err) {
-                resDiv.textContent = 'Error: ' + err.message;
+                resDiv.className = 'result error';
+                resDiv.textContent = '❌ Network Error: ' + err.message;
             }
         }
 
+        function makeBrackets(m1, m2, m3, m4) {
+            return [
+                { occupancy_pct_min: 0,  occupancy_pct_max: 40,  multiplier: parseFloat(m1) },
+                { occupancy_pct_min: 40, occupancy_pct_max: 60,  multiplier: parseFloat(m2) },
+                { occupancy_pct_min: 60, occupancy_pct_max: 80,  multiplier: parseFloat(m3) },
+                { occupancy_pct_min: 80, occupancy_pct_max: 100, multiplier: parseFloat(m4) },
+            ];
+        }
+
+        // --- Load dropdowns ---
+        let airportsList = [];
+        let aircraftList = [];
+
+        async function loadDropdowns() {
+            try {
+                const [airportsRes, aircraftRes] = await Promise.all([
+                    fetch(API + '/api/admin/airports'),
+                    fetch(API + '/api/admin/aircraft')
+                ]);
+                const airports = await airportsRes.json();
+                const aircraft = await aircraftRes.json();
+
+                airportsList = airports.data || [];
+                aircraftList = aircraft.data || [];
+
+                // Populate airport selects
+                const airportOptions = airportsList.map(a => `<option value="${a._id}">${a._id} — ${a.city}</option>`).join('');
+                const emptyOpt = '<option value="">Select airport</option>';
+                ['origin-select', 'dest-select', 'pr-origin-select', 'pr-dest-select'].forEach(id => {
+                    document.getElementById(id).innerHTML = emptyOpt + airportOptions;
+                });
+
+                // Populate aircraft select
+                const acOptions = aircraftList.map(a => `<option value="${a._id}" data-eco="${a.seat_config?.economy || 0}" data-biz="${a.seat_config?.business || 0}" data-first="${a.seat_config?.first_class || 0}">${a._id} — ${a.model} (${a.total_seats} seats)</option>`).join('');
+                document.getElementById('aircraft-select').innerHTML = '<option value="">Select aircraft</option>' + acOptions;
+            } catch (err) {
+                console.error('Failed to load dropdowns:', err);
+            }
+        }
+
+        loadDropdowns();
+
+        // --- Auto-calculate total seats ---
+        ['econ_seats', 'biz_seats'].forEach(id => {
+            document.getElementById(id).addEventListener('input', () => {
+                const eco = parseInt(document.getElementById('econ_seats').value) || 0;
+                const biz = parseInt(document.getElementById('biz_seats').value) || 0;
+                document.getElementById('total_seats').value = eco + biz;
+            });
+        });
+
+        // --- Toggle pricing config ---
+        document.getElementById('create_pricing').addEventListener('change', (e) => {
+            document.getElementById('pricing-config').style.display = e.target.checked ? 'grid' : 'none';
+        });
+
+        // --- Toggle flight multiplier config ---
+        document.getElementById('add_flight_multiplier').addEventListener('change', (e) => {
+            document.getElementById('flight-multiplier-config').style.display = e.target.checked ? 'block' : 'none';
+        });
+
+        // --- AIRPORT SUBMIT ---
         document.getElementById('form-airport').addEventListener('submit', (e) => {
             e.preventDefault();
             const fd = new FormData(e.target);
             const data = Object.fromEntries(fd.entries());
-            data.terminals = [];
+            data._id = data._id.toUpperCase();
             data.coordinates = { lat: 0, lng: 0 };
             submitData('/api/admin/airports', data, 'res-airport');
         });
 
+        // --- AIRCRAFT SUBMIT ---
         document.getElementById('form-aircraft').addEventListener('submit', (e) => {
             e.preventDefault();
             const fd = new FormData(e.target);
+            const eco = parseInt(fd.get('econ_seats'));
+            const biz = parseInt(fd.get('biz_seats'));
             const data = {
                 _id: fd.get('_id'),
                 registration_number: fd.get('registration_number'),
                 model: fd.get('model'),
-                total_seats: parseInt(fd.get('total_seats')),
-                seat_config: {
-                    economy: parseInt(fd.get('econ_seats')),
-                    business: parseInt(fd.get('biz_seats')),
-                    first_class: 0
-                },
-                status: "active"
+                total_seats: eco + biz,
+                seat_config: { economy: eco, business: biz, first_class: 0 },
+                status: 'active'
             };
             submitData('/api/admin/aircraft', data, 'res-aircraft');
         });
 
-        document.getElementById('form-flight').addEventListener('submit', (e) => {
+        // --- FLIGHT SUBMIT (with pricing rules) ---
+        document.getElementById('form-flight').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const resDiv = document.getElementById('res-flight');
+            resDiv.style.display = 'block';
+            resDiv.className = 'result';
+            resDiv.textContent = '⏳ Creating flight...';
+
+            const origin = fd.get('origin_ref');
+            const destination = fd.get('destination_ref');
+            const aircraftRef = fd.get('aircraft_ref');
+
+            // Get aircraft seat config from dropdown
+            const acSelect = document.getElementById('aircraft-select');
+            const selectedOpt = acSelect.options[acSelect.selectedIndex];
+            const ecoSeats = parseInt(selectedOpt.dataset.eco) || 150;
+            const bizSeats = parseInt(selectedOpt.dataset.biz) || 30;
+            const firstSeats = parseInt(selectedOpt.dataset.first) || 0;
+
+            const ecoFare = parseFloat(fd.get('base_fare_economy')) || 0;
+            const bizFare = parseFloat(fd.get('base_fare_business')) || 0;
+            const firstFare = parseFloat(fd.get('base_fare_first')) || 0;
+
+            const flightData = {
+                _id: fd.get('_id'),
+                flight_number: fd.get('flight_number'),
+                aircraft_ref: aircraftRef,
+                origin_ref: origin,
+                destination_ref: destination,
+                departure_time: fd.get('departure_time'),
+                arrival_time: fd.get('arrival_time'),
+                status: 'scheduled',
+                base_fare: {
+                    economy: ecoFare,
+                    business: bizFare,
+                    first_class: firstFare > 0 ? firstFare : null
+                },
+                seat_inventory: {
+                    economy: { total: ecoSeats, available: ecoSeats },
+                    business: { total: bizSeats, available: bizSeats },
+                    first_class: { total: firstSeats, available: firstSeats }
+                }
+            };
+
+            // Add flight pricing multiplier if checkbox is checked
+            if (document.getElementById('add_flight_multiplier').checked) {
+                flightData.pricing_multiplier = makeBrackets(
+                    document.getElementById('fm_m1').value,
+                    document.getElementById('fm_m2').value,
+                    document.getElementById('fm_m3').value,
+                    document.getElementById('fm_m4').value
+                );
+            }
+
+            try {
+                // 1. Insert flight
+                const flightRes = await fetch(API + '/api/admin/flights', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(flightData)
+                });
+                const flightResult = await flightRes.json();
+
+                if (!flightResult.success) {
+                    resDiv.className = 'result error';
+                    resDiv.textContent = '❌ Flight Error: ' + (flightResult.error || JSON.stringify(flightResult));
+                    return;
+                }
+
+                let messages = ['✅ Flight created: ' + fd.get('_id')];
+
+                // 2. Auto-create pricing rules if checkbox is checked
+                if (document.getElementById('create_pricing').checked) {
+                    const validFrom = document.getElementById('rule_valid_from').value;
+                    const validUntil = document.getElementById('rule_valid_until').value;
+
+                    // Economy pricing rule
+                    const ecoRule = {
+                        route: { origin, destination },
+                        cabin_class: 'economy',
+                        base_price: ecoFare,
+                        demand_brackets: makeBrackets(
+                            document.getElementById('eco_m1').value,
+                            document.getElementById('eco_m2').value,
+                            document.getElementById('eco_m3').value,
+                            document.getElementById('eco_m4').value
+                        ),
+                        valid_from: validFrom,
+                        valid_until: validUntil
+                    };
+                    const ecoRes = await fetch(API + '/api/admin/pricing-rules', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(ecoRule)
+                    });
+                    const ecoResult = await ecoRes.json();
+                    messages.push(ecoResult.success
+                        ? `✅ Economy pricing rule created (${origin}→${destination})`
+                        : `⚠️ Economy pricing rule failed: ${ecoResult.error}`);
+
+                    // Business pricing rule
+                    if (bizSeats > 0) {
+                        const bizRule = {
+                            route: { origin, destination },
+                            cabin_class: 'business',
+                            base_price: bizFare,
+                            demand_brackets: makeBrackets(
+                                document.getElementById('biz_m1').value,
+                                document.getElementById('biz_m2').value,
+                                document.getElementById('biz_m3').value,
+                                document.getElementById('biz_m4').value
+                            ),
+                            valid_from: validFrom,
+                            valid_until: validUntil
+                        };
+                        const bizRes = await fetch(API + '/api/admin/pricing-rules', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(bizRule)
+                        });
+                        const bizResult = await bizRes.json();
+                        messages.push(bizResult.success
+                            ? `✅ Business pricing rule created (${origin}→${destination})`
+                            : `⚠️ Business pricing rule failed: ${bizResult.error}`);
+                    }
+                }
+
+                resDiv.className = 'result success';
+                resDiv.textContent = messages.join('\n');
+            } catch (err) {
+                resDiv.className = 'result error';
+                resDiv.textContent = '❌ Network Error: ' + err.message;
+            }
+        });
+
+        // --- STANDALONE PRICING RULE SUBMIT ---
+        document.getElementById('form-pricing').addEventListener('submit', (e) => {
             e.preventDefault();
             const fd = new FormData(e.target);
             const data = {
-                _id: fd.get('_id'),
-                flight_number: fd.get('flight_number'),
-                aircraft_ref: fd.get('aircraft_ref'),
-                origin_ref: fd.get('origin_ref'),
-                destination_ref: fd.get('destination_ref'),
-                departure_time: fd.get('departure_time'),
-                arrival_time: fd.get('arrival_time'),
-                status: "scheduled",
-                base_fare: { economy: 3000.0, business: 10000.0, first_class: null },
-                stops: [],
-                seat_inventory: {
-                    economy: { total: 150, available: 150 },
-                    business: { total: 30, available: 30 },
-                    first_class: { total: 0, available: 0 }
-                }
+                route: {
+                    origin: fd.get('pr_origin'),
+                    destination: fd.get('pr_dest')
+                },
+                cabin_class: fd.get('pr_cabin'),
+                base_price: parseFloat(fd.get('pr_base_price')),
+                demand_brackets: makeBrackets(
+                    document.getElementById('pr_m1').value,
+                    document.getElementById('pr_m2').value,
+                    document.getElementById('pr_m3').value,
+                    document.getElementById('pr_m4').value
+                ),
+                valid_from: fd.get('pr_valid_from'),
+                valid_until: fd.get('pr_valid_until')
             };
-            submitData('/api/admin/flights', data, 'res-flight');
+            submitData('/api/admin/pricing-rules', data, 'res-pricing');
+        });
+
+        // Auto-adjust standalone multipliers based on cabin class
+        document.getElementById('pr-cabin').addEventListener('change', (e) => {
+            if (e.target.value === 'business') {
+                document.getElementById('pr_m2').value = '1.2';
+                document.getElementById('pr_m3').value = '1.4';
+                document.getElementById('pr_m4').value = '1.6';
+            } else {
+                document.getElementById('pr_m2').value = '1.15';
+                document.getElementById('pr_m3').value = '1.3';
+                document.getElementById('pr_m4').value = '1.5';
+            }
         });
     </script>
 </body>

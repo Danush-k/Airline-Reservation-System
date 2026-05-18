@@ -252,6 +252,15 @@ router.post('/flights', async (req, res) => {
       }
     }
 
+    // Cast pricing_multiplier brackets to proper types
+    if (req.body.pricing_multiplier && Array.isArray(req.body.pricing_multiplier)) {
+      req.body.pricing_multiplier = req.body.pricing_multiplier.map(b => ({
+        occupancy_pct_min: parseInt(b.occupancy_pct_min),
+        occupancy_pct_max: parseInt(b.occupancy_pct_max),
+        multiplier: new Double(parseFloat(b.multiplier))
+      }));
+    }
+
     const result = await db.collection('flights').insertOne(req.body);
     res.json({ success: true, data: result });
   } catch (err) {

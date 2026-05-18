@@ -93,7 +93,13 @@ async function seed() {
         business:   { total: new Int32(24),  available: new Int32(24) },
         first_class:{ total: new Int32(0),   available: new Int32(0) }
       },
-      base_fare: { economy: new Double(4500), business: new Double(12000), first_class: null }
+      base_fare: { economy: new Double(4500), business: new Double(12000), first_class: null },
+      pricing_multiplier: [
+        { occupancy_pct_min: 0,  occupancy_pct_max: 40,  multiplier: new Double(1.0) },
+        { occupancy_pct_min: 40, occupancy_pct_max: 60,  multiplier: new Double(1.1) },
+        { occupancy_pct_min: 60, occupancy_pct_max: 80,  multiplier: new Double(1.25) },
+        { occupancy_pct_min: 80, occupancy_pct_max: 100, multiplier: new Double(1.4) },
+      ]
     },
     {
       _id: 'FL-002', flight_number: 'AI-305', aircraft_ref: 'AC-002',
@@ -106,7 +112,13 @@ async function seed() {
         business:   { total: new Int32(30),  available: new Int32(29) },
         first_class:{ total: new Int32(0),   available: new Int32(0) }
       },
-      base_fare: { economy: new Double(5200), business: new Double(14000), first_class: null }
+      base_fare: { economy: new Double(5200), business: new Double(14000), first_class: null },
+      pricing_multiplier: [
+        { occupancy_pct_min: 0,  occupancy_pct_max: 40,  multiplier: new Double(1.0) },
+        { occupancy_pct_min: 40, occupancy_pct_max: 60,  multiplier: new Double(1.1) },
+        { occupancy_pct_min: 60, occupancy_pct_max: 80,  multiplier: new Double(1.25) },
+        { occupancy_pct_min: 80, occupancy_pct_max: 100, multiplier: new Double(1.4) },
+      ]
     },
     {
       _id: 'FL-003', flight_number: 'AI-410', aircraft_ref: 'AC-001',
@@ -119,7 +131,13 @@ async function seed() {
         business:   { total: new Int32(24),  available: new Int32(24) },
         first_class:{ total: new Int32(0),   available: new Int32(0) }
       },
-      base_fare: { economy: new Double(3200), business: new Double(8500), first_class: null }
+      base_fare: { economy: new Double(3200), business: new Double(8500), first_class: null },
+      pricing_multiplier: [
+        { occupancy_pct_min: 0,  occupancy_pct_max: 40,  multiplier: new Double(1.0) },
+        { occupancy_pct_min: 40, occupancy_pct_max: 60,  multiplier: new Double(1.1) },
+        { occupancy_pct_min: 60, occupancy_pct_max: 80,  multiplier: new Double(1.25) },
+        { occupancy_pct_min: 80, occupancy_pct_max: 100, multiplier: new Double(1.4) },
+      ]
     },
     {
       _id: 'FL-004', flight_number: 'AI-118', aircraft_ref: 'AC-002',
@@ -132,7 +150,13 @@ async function seed() {
         business:   { total: new Int32(30),  available: new Int32(30) },
         first_class:{ total: new Int32(0),   available: new Int32(0) }
       },
-      base_fare: { economy: new Double(2800), business: new Double(7500), first_class: null }
+      base_fare: { economy: new Double(2800), business: new Double(7500), first_class: null },
+      pricing_multiplier: [
+        { occupancy_pct_min: 0,  occupancy_pct_max: 40,  multiplier: new Double(1.0) },
+        { occupancy_pct_min: 40, occupancy_pct_max: 60,  multiplier: new Double(1.1) },
+        { occupancy_pct_min: 60, occupancy_pct_max: 80,  multiplier: new Double(1.25) },
+        { occupancy_pct_min: 80, occupancy_pct_max: 100, multiplier: new Double(1.4) },
+      ]
     },
     {
       _id: 'FL-005', flight_number: 'AI-550', aircraft_ref: 'AC-003',
@@ -145,7 +169,13 @@ async function seed() {
         business:   { total: new Int32(40),  available: new Int32(40) },
         first_class:{ total: new Int32(0),   available: new Int32(0) }
       },
-      base_fare: { economy: new Double(5800), business: new Double(15000), first_class: null }
+      base_fare: { economy: new Double(5800), business: new Double(15000), first_class: null },
+      pricing_multiplier: [
+        { occupancy_pct_min: 0,  occupancy_pct_max: 40,  multiplier: new Double(1.0) },
+        { occupancy_pct_min: 40, occupancy_pct_max: 60,  multiplier: new Double(1.1) },
+        { occupancy_pct_min: 60, occupancy_pct_max: 80,  multiplier: new Double(1.25) },
+        { occupancy_pct_min: 80, occupancy_pct_max: 100, multiplier: new Double(1.4) },
+      ]
     },
   ];
   await db.collection('flights').insertMany(flights);

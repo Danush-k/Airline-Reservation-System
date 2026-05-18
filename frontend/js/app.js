@@ -1,5 +1,8 @@
-// ===== ARDPS Frontend Application =====
 const API = '';
+
+// ===== SESSION =====
+window.sessionId = localStorage.getItem('ardps_session_id') || Math.random().toString(36).substring(2, 15);
+localStorage.setItem('ardps_session_id', window.sessionId);
 
 // ===== UTILITY =====
 function toast(msg, type = 'info') {
@@ -237,7 +240,7 @@ async function loadSeatMap() {
   container.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
 
   try {
-    const res = await fetch(`${API}/api/flights/${currentFlightId}/seats?cabin_class=${cabin}`);
+    const res = await fetch(`${API}/api/flights/${currentFlightId}/seats?cabin_class=${cabin}&session_id=${window.sessionId}`);
     const data = await res.json();
 
     if (!data.success) {
@@ -276,7 +279,12 @@ function renderSeatMap(seatData, container) {
     const rowSeats = rowMap[rn];
     rowSeats.forEach((s, i) => {
       const colIdx = columns.indexOf(s.col);
-      const cls = s.status === 'booked' ? 'booked' : (s.id === selectedSeatId ? 'selected' : 'available');
+      
+      let cls = 'available';
+      if (s.status === 'booked') cls = 'booked';
+      else if (s.status === 'held') cls = 'held';
+      else if (s.id === selectedSeatId) cls = 'selected';
+      
       const clickable = s.status === 'available';
       rowHTML += `<div class="seat ${cls}" ${clickable ? `onclick="selectSeat('${s.id}')"` : ''} title="${s.id} – ${s.status}">${s.id}</div>`;
       if (aisle_after.includes(colIdx)) rowHTML += '<div class="seat-aisle"></div>';
@@ -292,21 +300,45 @@ function renderSeatMap(seatData, container) {
 }
 
 function selectSeat(seatId) {
-  selectedSeatId = seatId;
-  document.getElementById('booking-seat').value = seatId;
-  document.getElementById('selected-seat-label').textContent = `— Seat ${seatId}`;
-
-  // Re-render to update the visual selection
-  const allSeats = document.querySelectorAll('#seat-map .seat');
-  allSeats.forEach(el => {
-    if (el.classList.contains('booked')) return;
-    if (el.textContent.trim() === seatId) {
-      el.classList.remove('available');
-      el.classList.add('selected');
-    } else {
-      el.classList.remove('selected');
-      el.classList.add('available');
+  // Call backend to hold the seat
+  fetch(`${API}/api/bookings/hold`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      flight_id: currentFlightId,
+      cabin_class: document.getElementById('booking-cabin').value,
+      seat_number: seatId,
+      session_id: window.sessionId
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (!data.success) {
+      toast(data.error || 'Seat is already held or booked', 'error');
+      loadSeatMap(); // Refresh
+      return;
     }
+    
+    // Success holding: update UI
+    selectedSeatId = seatId;
+    document.getElementById('booking-seat').value = seatId;
+    document.getElementById('selected-seat-label').textContent = `— Seat ${seatId}`;
+
+    // Re-render to update the visual selection
+    const allSeats = document.querySelectorAll('#seat-map .seat');
+    allSeats.forEach(el => {
+      if (el.classList.contains('booked') || el.classList.contains('held')) return;
+      if (el.textContent.trim() === seatId) {
+        el.classList.remove('available');
+        el.classList.add('selected');
+      } else {
+        el.classList.remove('selected');
+        el.classList.add('available');
+      }
+    });
+  })
+  .catch(err => {
+    toast('Error holding seat', 'error');
   });
 }
 
@@ -350,12 +382,22 @@ async function fetchBookingPrice() {
         mealDisplay = `${p.meal_type} (+₹${p.meal_surcharge.toLocaleString('en-IN')})`;
       }
 
+      // Flight multiplier row (only show if != 1.0)
+      let flightMultiplierRow = '';
+      if (p.flight_multiplier && p.flight_multiplier !== 1.0) {
+        flightMultiplierRow = `
+          <div class="pricing-row" style="color:var(--warning)"><span>Flight Multiplier</span><span>×${p.flight_multiplier}</span></div>
+          <div class="pricing-row"><span>After Flight Multiplier</span><span>₹${p.fare_after_flight_multiplier.toLocaleString('en-IN')}</span></div>
+        `;
+      }
+
       container.innerHTML = `
         <h4 style="margin-bottom:8px;font-size:0.9rem;color:var(--accent-light)">Dynamic Pricing</h4>
         <div class="pricing-row"><span>Base Price</span><span>₹${p.base_price.toLocaleString('en-IN')}</span></div>
         <div class="pricing-row"><span>Occupancy</span><span>${p.occupancy_pct}%</span></div>
         <div class="pricing-row"><span>Demand Multiplier</span><span>×${p.demand_multiplier}</span></div>
         <div class="pricing-row"><span>After Demand</span><span>₹${p.fare_after_demand.toLocaleString('en-IN')}</span></div>
+        ${flightMultiplierRow}
         <div class="pricing-row" style="color:${advColor}"><span>Advance Booking — ${advLabel}</span><span>${advDisplay}</span></div>
         <div class="pricing-row" style="color:${p.meal_surcharge > 0 ? 'var(--warning)' : 'var(--text-muted)'}"><span>Meal Surcharge</span><span>${mealDisplay}</span></div>
         <div class="pricing-row"><span>Taxes (12%)</span><span>₹${p.taxes.toLocaleString('en-IN')}</span></div>
@@ -392,7 +434,8 @@ document.getElementById('booking-form').addEventListener('submit', async (e) => 
     cabin_class: document.getElementById('booking-cabin').value,
     payment_method: document.getElementById('booking-payment').value,
     meal_preference: document.getElementById('booking-meal').value || undefined,
-    seat_number: seatNumber
+    seat_number: seatNumber,
+    session_id: window.sessionId
   };
 
   if (!body.passenger_id) {
@@ -918,6 +961,17 @@ document.getElementById('form-aircraft')?.addEventListener('submit', async (e) =
   btn.textContent = 'Inserting...';
   
   const fd = new FormData(form);
+  const total = parseInt(fd.get('total_seats')) || 0;
+  const econ = parseInt(fd.get('econ_seats')) || 0;
+  const biz = parseInt(fd.get('biz_seats')) || 0;
+
+  if (total !== econ + biz) {
+    toast('Total seats must equal the sum of Economy and Business seats.', 'error');
+    btn.disabled = false;
+    btn.textContent = 'Insert Aircraft';
+    return;
+  }
+
   const data = {
     _id: fd.get('_id'),
     registration_number: fd.get('registration_number'),
@@ -950,6 +1004,29 @@ document.getElementById('form-aircraft')?.addEventListener('submit', async (e) =
   btn.textContent = 'Insert Aircraft';
 });
 
+// Auto-calculate business seats
+const formAircraft = document.getElementById('form-aircraft');
+if (formAircraft) {
+  const totalInput = formAircraft.querySelector('input[name="total_seats"]');
+  const econInput = formAircraft.querySelector('input[name="econ_seats"]');
+  const bizInput = formAircraft.querySelector('input[name="biz_seats"]');
+  
+  const updateBizSeats = () => {
+    if (totalInput.value && econInput.value) {
+      bizInput.value = Math.max(0, parseInt(totalInput.value) - parseInt(econInput.value));
+    }
+  };
+
+  totalInput?.addEventListener('input', updateBizSeats);
+  econInput?.addEventListener('input', updateBizSeats);
+}
+
+// Toggle pricing multiplier visibility
+document.getElementById('fl_add_multiplier')?.addEventListener('change', (e) => {
+  const config = document.getElementById('fl-multiplier-config');
+  if (config) config.style.display = e.target.checked ? 'block' : 'none';
+});
+
 document.getElementById('form-flight')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const form = e.target;
@@ -958,6 +1035,9 @@ document.getElementById('form-flight')?.addEventListener('submit', async (e) => 
   btn.textContent = 'Inserting...';
   
   const fd = new FormData(form);
+  const ecoFare = parseFloat(fd.get('base_fare_economy')) || 3000;
+  const bizFare = parseFloat(fd.get('base_fare_business')) || 10000;
+
   const data = {
     _id: fd.get('_id'),
     flight_number: fd.get('flight_number'),
@@ -967,7 +1047,7 @@ document.getElementById('form-flight')?.addEventListener('submit', async (e) => 
     departure_time: fd.get('departure_time'),
     arrival_time: fd.get('arrival_time'),
     status: "scheduled",
-    base_fare: { economy: 3000.0, business: 10000.0, first_class: null },
+    base_fare: { economy: ecoFare, business: bizFare, first_class: null },
     stops: [],
     seat_inventory: {
       economy: { total: 150, available: 150 },
@@ -975,6 +1055,17 @@ document.getElementById('form-flight')?.addEventListener('submit', async (e) => 
       first_class: { total: 0, available: 0 }
     }
   };
+
+  // Add pricing multiplier if checkbox is checked
+  const multiplierCheckbox = document.getElementById('fl_add_multiplier');
+  if (multiplierCheckbox && multiplierCheckbox.checked) {
+    data.pricing_multiplier = [
+      { occupancy_pct_min: 0,  occupancy_pct_max: 40,  multiplier: parseFloat(document.getElementById('fl_pm_m1').value) || 1.0 },
+      { occupancy_pct_min: 40, occupancy_pct_max: 60,  multiplier: parseFloat(document.getElementById('fl_pm_m2').value) || 1.1 },
+      { occupancy_pct_min: 60, occupancy_pct_max: 80,  multiplier: parseFloat(document.getElementById('fl_pm_m3').value) || 1.25 },
+      { occupancy_pct_min: 80, occupancy_pct_max: 100, multiplier: parseFloat(document.getElementById('fl_pm_m4').value) || 1.4 },
+    ];
+  }
   
   try {
     const res = await fetch(`${API}/api/admin/flights`, {

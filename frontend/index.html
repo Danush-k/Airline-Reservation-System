@@ -86,6 +86,7 @@
             <div class="seat-legend">
               <span class="legend-item"><span class="seat-demo seat-available-demo"></span> Available</span>
               <span class="legend-item"><span class="seat-demo seat-booked-demo"></span> Booked</span>
+              <span class="legend-item"><span class="seat-demo seat-held-demo"></span> Held</span>
               <span class="legend-item"><span class="seat-demo seat-selected-demo"></span> Selected</span>
             </div>
             <div id="seat-map" class="seat-map"></div>
@@ -356,7 +357,49 @@
               <input type="datetime-local" name="arrival_time" class="form-input" required>
             </div>
           </div>
-          <button type="submit" class="btn btn-primary btn-full" style="margin-top:1rem">Insert Flight</button>
+
+          <!-- Base Fares -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>Economy Base Fare (₹)</label>
+              <input type="number" name="base_fare_economy" id="fl_bf_eco" class="form-input" step="0.01" min="0" value="3000" required>
+            </div>
+            <div class="form-group">
+              <label>Business Base Fare (₹)</label>
+              <input type="number" name="base_fare_business" id="fl_bf_biz" class="form-input" step="0.01" min="0" value="10000" required>
+            </div>
+          </div>
+
+          <!-- Pricing Multiplier Toggle -->
+          <div style="display:flex;align-items:center;gap:0.5rem;margin:0.75rem 0 0.25rem;">
+            <input type="checkbox" id="fl_add_multiplier" checked style="width:16px;height:16px;accent-color:var(--accent);">
+            <label for="fl_add_multiplier" style="margin:0;font-size:0.85rem;color:var(--accent-light);cursor:pointer;">Include Pricing Multiplier</label>
+          </div>
+
+          <!-- Pricing Multiplier Brackets -->
+          <div id="fl-multiplier-config" style="border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:0.75rem;margin:0.25rem 0 0.5rem;background:rgba(255,255,255,0.02);">
+            <div style="font-size:0.75rem;font-weight:600;color:var(--accent-light);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:1px;">Pricing Multiplier — Occupancy Brackets</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;font-size:0.82rem;">
+              <div style="display:flex;align-items:center;gap:0.4rem;">
+                <span style="color:var(--text-muted);min-width:60px;font-size:0.75rem;">0–40%</span>
+                <input type="number" id="fl_pm_m1" class="form-input" value="1.0" step="0.05" min="0.5" max="3" style="padding:0.4rem;font-size:0.82rem;">
+              </div>
+              <div style="display:flex;align-items:center;gap:0.4rem;">
+                <span style="color:var(--text-muted);min-width:60px;font-size:0.75rem;">40–60%</span>
+                <input type="number" id="fl_pm_m2" class="form-input" value="1.1" step="0.05" min="0.5" max="3" style="padding:0.4rem;font-size:0.82rem;">
+              </div>
+              <div style="display:flex;align-items:center;gap:0.4rem;">
+                <span style="color:var(--text-muted);min-width:60px;font-size:0.75rem;">60–80%</span>
+                <input type="number" id="fl_pm_m3" class="form-input" value="1.25" step="0.05" min="0.5" max="3" style="padding:0.4rem;font-size:0.82rem;">
+              </div>
+              <div style="display:flex;align-items:center;gap:0.4rem;">
+                <span style="color:var(--text-muted);min-width:60px;font-size:0.75rem;">80–100%</span>
+                <input type="number" id="fl_pm_m4" class="form-input" value="1.4" step="0.05" min="0.5" max="3" style="padding:0.4rem;font-size:0.82rem;">
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full" style="margin-top:0.5rem">Insert Flight</button>
         </form>
       </div>
 

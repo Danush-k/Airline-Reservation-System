@@ -96,10 +96,22 @@ router.get('/', async (req, res) => {
     // Meal surcharge
     const meal_surcharge = MEAL_SURCHARGES[meal || ''] || 0;
 
+    // Flight-level pricing multiplier (stored on flight document)
+    let flight_multiplier = 1.0;
+    if (flight.pricing_multiplier && Array.isArray(flight.pricing_multiplier)) {
+      for (const bracket of flight.pricing_multiplier) {
+        if (occupancy_pct >= bracket.occupancy_pct_min && occupancy_pct <= bracket.occupancy_pct_max) {
+          flight_multiplier = bracket.multiplier;
+          break;
+        }
+      }
+    }
+
     // Calculate final fare
     const fare_after_demand = base_price * demand_multiplier;
-    const advance_adjustment = fare_after_demand * (advanceInfo.discount_pct / 100); // positive = discount, negative = surcharge
-    const fare_after_advance = fare_after_demand - advance_adjustment;
+    const fare_after_flight_multiplier = fare_after_demand * flight_multiplier;
+    const advance_adjustment = fare_after_flight_multiplier * (advanceInfo.discount_pct / 100); // positive = discount, negative = surcharge
+    const fare_after_advance = fare_after_flight_multiplier - advance_adjustment;
     const fare_with_meal = fare_after_advance + meal_surcharge;
     const taxes = fare_with_meal * 0.12;
     const total_fare = fare_with_meal + taxes;
@@ -110,6 +122,9 @@ router.get('/', async (req, res) => {
         base_price: Math.round(base_price * 100) / 100,
         occupancy_pct: Math.round(occupancy_pct * 100) / 100,
         demand_multiplier,
+        flight_multiplier,
+        fare_after_demand: Math.round(fare_after_demand * 100) / 100,
+        fare_after_flight_multiplier: Math.round(fare_after_flight_multiplier * 100) / 100,
         advance_booking: {
           days_before: advanceInfo.days_before,
           discount_pct: advanceInfo.discount_pct,
@@ -118,7 +133,6 @@ router.get('/', async (req, res) => {
         },
         meal_surcharge,
         meal_type: meal || 'none',
-        fare_after_demand: Math.round(fare_after_demand * 100) / 100,
         fare_after_advance: Math.round(fare_after_advance * 100) / 100,
         fare_with_meal: Math.round(fare_with_meal * 100) / 100,
         taxes: Math.round(taxes * 100) / 100,

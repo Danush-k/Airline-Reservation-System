@@ -448,6 +448,11 @@ textarea.form-input {
   color: var(--danger);
 }
 
+.seat-badge.held {
+  background: rgba(245, 158, 11, 0.2);
+  color: var(--warning);
+}
+
 /* ===== SPLIT VIEW ===== */
 .split-view {
   display: grid;
@@ -776,6 +781,10 @@ textarea.form-input {
   background: #ef4444;
 }
 
+.seat-held-demo {
+  background: #f59e0b;
+}
+
 .seat-selected-demo {
   background: #6366f1;
   box-shadow: 0 0 6px rgba(99, 102, 241, 0.6);
@@ -875,6 +884,13 @@ textarea.form-input {
   color: #fff;
   box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
   transform: scale(1.1);
+}
+
+.seat.held {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: rgba(245, 158, 11, 0.5);
+  color: var(--warning);
+  cursor: not-allowed;
 }
 
 .seat-aisle {
