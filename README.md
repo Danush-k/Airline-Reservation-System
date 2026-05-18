@@ -576,11 +576,9 @@ For issues, questions, or contributions, please:
 ---
 
 **Project Lead & Developer**: Danush K  
-**Institution**: Sri Sivasubramaniya Nadar College of Engineering  
-**Course**: ICS1402 - Database Systems (M.Tech CSE)  
 **Academic Year**: 2025-26 (Semester IV)
 
-**Developed as part of the NoSQL Database Systems Assignment**
+**Developed as part of the NoSQL Database Systems Learning**
 
 ---
 
