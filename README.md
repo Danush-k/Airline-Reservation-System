@@ -331,43 +331,13 @@ curl "http://localhost:3000/api/flights?origin=MAA&destination=BLR&date=2025-06-
 
 ### Collection Architecture Diagram
 
-```
-                    Collection Architecture — ARDPS
-                              
-                                  ┌─────────┐
-                                  │ Tickets │
-                                  └────┬────┘
-                                       │
-                      passenger_ref    │
-                           ┌───────────┘
-                           │
-                      ┌────▼──────┐       booking_ref
-                      │ Passengers├──────────────┐
-                      └────┬──────┘              │
-                           │booking_history     │
-                           │                    │
-                      ┌────▼──────────────┐     │
-              flight_ref        Bookings  │◄────┘
-                 ├────────────────┼────────┤
-                 │    flight_ref  │ snapshot
-                 │                │
-            ┌────▼────┐    ┌──────▼──────────┐
-            │  Flights │    │ Pricing Rules   │
-            └────┬─────┘    └─────────────────┘
-       ┌────────┼────────┐
-       │        │aircraft_ref
-   dest_ref origin_ref   │
-       │        │      ┌─▼───────┐
-    ┌──▼─┐  ┌───▼──┐  │ Aircraft │
-    │Airports│      │          │
-    └────┘  └──────┘  └─────────┘
+![Collection Architecture — ARDPS](Collection_Architecture_ARDPS.png)
 
-    Relationships:
-    • Tickets ──> Passengers ──> Bookings
-    • Bookings ──> Flights ──> Airports & Aircraft
-    • Flights ──> Pricing Rules (demand-based)
-    • Bookings ──> Seat Holds (concurrency control)
-```
+**Relationships:**
+- Tickets ──> Passengers ──> Bookings
+- Bookings ──> Flights ──> Airports & Aircraft
+- Flights ──> Pricing Rules (demand-based)
+- Bookings ──> Seat Holds (concurrency control)
 
 ### Core Collections
 
